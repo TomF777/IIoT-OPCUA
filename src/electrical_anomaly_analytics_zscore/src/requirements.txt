@@ -1,0 +1,9 @@
+influxdb-client==1.48.0
+opcua==0.98.13
+cryptography==44.0.3
+numpy==1.26.0
+scipy==1.15.2
+
+
+
+

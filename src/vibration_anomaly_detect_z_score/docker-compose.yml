@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+
+# ===== Vibration acceleration monitoring ====
+ vib-accel-monitor-01:
+       container_name: VibAccelMonitor01
+       image: vib_anomaly_detect_z_score_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - .//opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              Z_SCORE_THRESHOLD: 2.5
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_03_VibrationAnalytics.VibSensorStruct01"                              # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                 # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+       networks:
+              - IOT_Network
+
+networks:
+       IOT_Network:
+              external: true
+
+

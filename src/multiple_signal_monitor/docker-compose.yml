@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+
+#=========== Generic multiple sensor monitoring by OPC UA =====
+ generic-multiple-sensors:
+      container_name: Sensors
+      image: generic_multiple_signal_monitor_opcua_img:0.0.1
+      restart: always
+      volumes:
+            - "/etc/timezone:/etc/timezone:ro"
+            - "/etc/localtime:/etc/localtime:ro"
+            - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"      # security certificate
+            - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"      # security certificate
+            - "../../apps_data/opcua/multiple_signal_monitor/config.json:/src/config.json"        # signals for OPC polling and url of opc ua server 
+      env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+      environment:
+            LINE_NAME: ${LINE_NAME}
+            MACHINE_NAME: "device01"
+      labels:
+            IoT.container.project: "IoT_Industrial"
+      networks:
+            - IOT_Network
+
+networks:
+       IOT_Network:
+          external: true
+
+

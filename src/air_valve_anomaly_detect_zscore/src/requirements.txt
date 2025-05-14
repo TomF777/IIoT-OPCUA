@@ -1,0 +1,5 @@
+opcua==0.98.13
+cryptography==44.0.3
+crypto==1.4.1
+influxdb-client==1.48.0
+

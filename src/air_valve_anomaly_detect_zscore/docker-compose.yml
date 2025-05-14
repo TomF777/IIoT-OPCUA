@@ -1,0 +1,33 @@
+#Example of docker compose deploy file
+version: "3.9"
+services:
+
+# ===== Air valve analytics  ====
+ air-valve-monitor-01:
+       container_name: AirValveMonitor01
+       image: air_valve_zscore_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              Z_SCORE_THRESHOLD: 2.5
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_04_AirValveAnalytics.AirValveStruct01"                                # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                 # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+       networks:
+              - IOT_Network
+
+networks:
+    IOT_Network:
