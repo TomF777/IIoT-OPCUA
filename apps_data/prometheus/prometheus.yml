@@ -1,0 +1,24 @@
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. The default is every 1 minute.
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['Node-Exporter-1:9100']
+        labels:
+          group: 'monitoring_node_ex1'
+          
+      - targets: ['Node-Exporter-2:9100']
+        labels:
+          group: 'monitoring_node_ex2'
+          
+      - targets: ['Node-Exporter-3:9100']
+        labels:
+          group: 'monitoring_node_ex3'
+
+  - job_name: 'docker'
+    static_configs:          
+      - targets: ["127.0.0.1:9323"]
+        labels:
+          group: 'monitoring_docker'
