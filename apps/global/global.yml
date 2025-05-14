@@ -1,0 +1,99 @@
+#version: "3.9"
+services:
+
+
+# ===== INFLUXDB ======
+ global-influxdb:
+       container_name: Global_InfluxDB
+       image: influxdb:2.2.0
+       ports:
+              - 8086:8086 
+       restart: always
+       volumes:
+              - "/etc/localtime:/etc/localtime:ro"
+              - "/home/tomf/IIoT-mqtt/apps_data/influx/config:/etc/influxdb2"
+              - "/home/tomf/IIoT-mqtt/apps_data/influx/data:/var/lib/influxdb2"
+       networks:
+              - IOT_Network
+              
+              
+# ===== GRAFANA ==========
+ global-grafana:
+       container_name: Global_Grafana
+       image:  grafana/grafana:10.1.10
+       ports:
+              - 3000:3000 
+       restart: always
+       volumes:
+              - "/home/tomf/IIoT-mqtt/apps_data/grafana/etc/grafana:/etc/grafana"
+              - "/home/tomf/IIoT-mqtt/apps_data/grafana/var/log:/var/log/grafana"
+              - "/home/tomf/IIoT-mqtt/apps_data/grafana/var/lib:/var/lib"
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+       networks:
+              - IOT_Network
+              
+
+
+# ===== Node exporter 1 ====
+ node-exporter-1:
+       container_name: Node-Exporter-1
+       image:  bitnami/node-exporter:1.9.0
+       ports:
+              - 9101:9100
+       restart: always
+       networks:
+              - IOT_Network
+
+# ===== Node exporter 2 ====
+ node-exporter-2:
+       container_name: Node-Exporter-2
+       image:  bitnami/node-exporter:1.9.0
+       ports:
+              - 9102:9100
+       restart: always
+       networks:
+              - IOT_Network
+
+# ===== Node exporter 3 ====
+ node-exporter-3:
+       container_name: Node-Exporter-3
+       image:  bitnami/node-exporter:1.9.0
+       ports:
+              - 9103:9100
+       restart: always
+       networks:
+              - IOT_Network
+
+
+# ===== Prometheus ====
+ global-prometheus:
+       container_name: Global_Prometheus
+       image:  bitnami/prometheus:2.55.1
+       ports:
+              - 9090:9090
+       restart: always
+       volumes:
+              - "/home/tomf/IIoT-mqtt/apps_data/prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml" 
+       networks:
+              - IOT_Network
+
+# ===== Portainer =====
+ global-portainer:
+       container_name: Global_Portainer
+       image: portainer/portainer-ce:latest
+       ports:
+              - 9443:9443
+              - 9000:9000
+       restart: unless-stopped
+       volumes:
+              - "/home/tomf/IIoT-mqtt/apps_data/portainer/data:/data"
+              - "/var/run/docker.sock:/var/run/docker.sock"
+       networks:
+              - IOT_Network
+
+
+networks:
+       IOT_Network:
+           external: true
+

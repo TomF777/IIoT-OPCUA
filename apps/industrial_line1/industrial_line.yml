@@ -1,0 +1,235 @@
+version: "3.9"
+services:
+
+#=========== Generic multiple sensor monitoring by OPC UA =====
+ generic-multiple-sensors:
+      container_name: Sensors
+      image: generic_multiple_signal_monitor_opcua_img:0.0.1
+      restart: always
+      volumes:
+            - "/etc/timezone:/etc/timezone:ro"
+            - "/etc/localtime:/etc/localtime:ro"
+            - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"      # security certificate
+            - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"      # security certificate
+            - "../../apps_data/opcua/multiple_signal_monitor/config.json:/src/config.json"        # signals for OPC polling and url of opc ua server 
+      env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+      environment:
+            LINE_NAME: ${LINE_NAME}
+            MACHINE_NAME: "device01"
+      labels:
+            IoT.container.project: "IoT_Industrial"
+      networks:
+            - IOT_Network
+
+
+
+#=========== Single sensor analytics by OPC UA =====
+ sensor01-anomaly-detect:
+       container_name: Sensor01-Anomaly
+       image: single_signal_anomaly_detect_zscore_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"                   # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"                   # security certificate
+       env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_12_OilContaminationAnalytics.OilDiffPressSensorStruct"                       # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                        # url of opc ua server 
+              
+              Z_SCORE_THRESHOLD: 2.5
+       labels:
+              IoT.container.project: "IoT_Industrial"
+              
+       networks:
+              - IOT_Network
+
+
+
+ generic-multiple-state:
+       container_name: States
+       image: generic_multiple_state_monitor_opcua_img:0.0.1 
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+              - "../../apps_data/opcua/multiple_state_monitor/config.json:/src/config.json"              # status list for OPC polling
+       env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+       labels:
+              IoT.container.project: "IoT_Industrial"
+              
+       networks:
+              - IOT_Network
+
+
+# ===== Vibration acceleration monitoring ====
+ vib-accel-monitor-01:
+       container_name: VibAccelMonitor01
+       image: vib_anomaly_detect_z_score_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - .//opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              Z_SCORE_THRESHOLD: 2.5
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_03_VibrationAnalytics.VibSensorStruct01"                              # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                 # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+       networks:
+              - IOT_Network
+
+
+ vib-accel-monitor-02:
+       container_name: VibAccelMonitor02
+       image: vib_anomaly_detect_z_score_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - .//opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              Z_SCORE_THRESHOLD: 2.5
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_03_VibrationAnalytics.VibSensorStruct02"                              # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                 # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+       networks:
+              - IOT_Network
+
+
+
+# ===== Air valve analytics  ====
+ air-valve-monitor-01:
+       container_name: AirValveMonitor01
+       image: air_valve_zscore_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              Z_SCORE_THRESHOLD: 2.5
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_04_AirValveAnalytics.AirValveStruct01"                                # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                 # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+       networks:
+              - IOT_Network
+
+
+ air-valve-monitor-02:
+       container_name: AirValveMonitor02
+       image: air_valve_zscore_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              Z_SCORE_THRESHOLD: 2.5
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_04_AirValveAnalytics.AirValveStruct02"                                # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                 # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+       networks:
+              - IOT_Network
+
+
+# ===== Electrical anomaly analytics for one device====
+ electrical-analytics1:
+       container_name: ElecDevice1
+       image: electrical_analytics_z_score_opcua_img:0.0.1
+       restart: always
+       volumes:
+              - "/etc/timezone:/etc/timezone:ro"
+              - "/etc/localtime:/etc/localtime:ro"
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.der:/src/Beckhoff_OpcUaServer.der"           # security certificate
+              - "../../apps_data/opcua/Beckhoff_OpcUaServer.pem:/src/Beckhoff_OpcUaServer.pem"           # security certificate
+       env_file:
+              - ./opcua_settings.env
+              - ./influxdb_settings.env
+       environment:
+              MODEL_WINDOW_SIZE: ${MODEL_WINDOW_SIZE}
+              ANOMALY_LIST_SIZE: ${ANOMALY_LIST_SIZE}
+              CURRENT_PEAK_NUMBER: 1
+              CURRENT_PEAK_HEIGHT: 1.3
+              Z_SCORE_THRESHOLD: 3.0
+              LINE_NAME: ${LINE_NAME}
+              MACHINE_NAME: "device01"
+              NODE_ID: "ns=4;s=PRG_05_ElectricalAnalytics.ElectPeriodicDeviceStruct01"                   # opcua namespace and node id
+              SERVER_URL: "opc.tcp://192.168.1.103:4840"                                                  # url of opc ua server 
+
+       labels:
+              IoT.container.project: "IoT_Industrial"
+              
+       networks:
+              - IOT_Network
+
+
+
+# ===== NETWORK CONFIG ================
+
+# network is created outside of docker-compose: 
+networks:
+  IOT_Network:
+     external: true
+
+
+
+
+
+
