@@ -47,20 +47,22 @@ def get_env_var(
     allow_convert = [str, int, float]
     if req_type not in allow_convert and req_type is not None:
         logger.error(
-            f"Cannot convert value of env_var {env_var} to {req_type}. \
-                Allowed convert type: str, int, float"
+            "Cannot convert value of env_var %s to %s. \
+                Allowed convert type: str, int, float",
+                env_var, req_type
         )
         raise SystemExit
 
     # Return value of env variable
     if env_val is None and default is None:
         # env_var does not exist and we did not set default value
-        logger.error(f"Env variable {env_var} does not exist")
+        logger.error("Env variable %s does not exist", env_var)
         raise SystemExit
     elif env_val is None:
         # env_var does not exist but return default (default is different than none)
         logger.warning(
-            f"Env variable {env_var} does not exist, return default value: {default}"
+            "Env variable %s does not exist, return default value: %s",
+            env_var, default
         )
         return default
     elif env_type is not req_type and req_type is not None:
@@ -68,17 +70,20 @@ def get_env_var(
         try:
             converted_env = req_type(env_val)
             logger.info(
-                f"Env variable {env_var} value: {env_val}. Converted from {env_type} to {req_type}."
+                "Env variable %s value: %s. Converted from %s to %s.",
+                env_var, env_val, env_type, req_type
             )
             return converted_env
         except Exception as e:
             logger.error(
-                f"Convert env_var variable {env_var} from {env_type} to {req_type} failed: {e}"
+                "Convert env_var variable %s from %s to %s failed: %s",
+                env_var, env_type, req_type, e
             )
             raise SystemExit
     else:
         # env_var exists, is the same type (or we not set type)
-        logger.info(f"Env variable {env_var} value: {env_val}, type: {env_type}")
+        logger.info("Env variable %s value: %s, type: %s",
+                    env_var, env_val, env_type)
         return env_val
 
 
@@ -101,7 +106,7 @@ INFLUX_JITTER_INTERVAL = get_env_var("INFLUX_JITTER_INTERVAL", int)
 INFLUX_ORG = get_env_var("INFLUX_ORG", str)
 INFLUX_TOKEN = get_env_var("INFLUX_TOKEN", str)
 INFLUX_URL = "http://" + INFLUX_HOST + ":" + INFLUX_PORT
-logger.info(f"INFLUX_URL value is:  {INFLUX_URL} ")
+logger.info("INFLUX_URL value is: %s", INFLUX_URL)
 
 
 class OPCHandler:
@@ -113,7 +118,7 @@ class OPCHandler:
         self.config = config
         self.server_url = self.config["opc"]["server_url"]
         self.nodes = {}
-        logging.info(f"server opc: {self.server_url}")
+        logging.info("server opc: %s", self.server_url)
 
     def connect_to_server(self, username:str, password:str, secure_string:str):
         """
@@ -130,9 +135,9 @@ class OPCHandler:
                 logging.info("Connected to OPC Server")
                 break
             except Exception as e:
-                logging.error(f"Unable to connect ot OPC server {e}")
+                logging.error("Unable to connect ot OPC server: %s", e)
                 logging.error(
-                    f"Trying to re-establish connection with OPC server in 3 seconds "
+                    "Trying to re-establish connection with OPC server in 3 seconds "
                 )
                 time.sleep(3)
 
@@ -150,7 +155,7 @@ class OPCHandler:
                 self.nodes[node_id] = self.client.get_node(f"ns={namespace};s={node_id_string}")
             else:
                 logging.error("OPC client is not created!")
-        logging.info(f"Configured nodes: {self.nodes}")
+        logging.info("Configured nodes: %s", self.nodes)
 
     def read_values(self):
         """
@@ -174,7 +179,8 @@ class OPCHandler:
                         sensor_value  = opc_node_children[3].get_value()
                         timestamp     = opc_node_children[4].get_value()
                     except Exception as e:
-                        logging.error(f"Error reading node {node_id}|{node}: {e}")
+                        logging.error("Error reading node %s|%s: %s",
+                                      node_id, node, e)
                         continue
                     else:
 
@@ -200,7 +206,7 @@ class OPCHandler:
 
         except KeyboardInterrupt:
             self.client.disconnect()
-            print("Keyboard interrupt received. Exiting...")
+            logging.info("Keyboard interrupt received. Exiting...")
 
 
     def write_to_influxdb(self, *sensor_data):
@@ -224,7 +230,7 @@ class OPCHandler:
                 write_api.write(INFLUX_BUCKET_NAME, INFLUX_ORG, point)
 
         except Exception as e:
-            logging.error(f"Send data to InfluxDB failed. Error code/reason: {e}")
+            logging.error("Send data to InfluxDB failed. Error code/reason: %s", e)
 
 
 
@@ -245,7 +251,7 @@ if __name__ == "__main__":
                                     retry_interval=1000)
 
     except Exception as e:
-        logger.error(f"Configuring InfluxDB failed. Error code/reason: {e}")
+        logger.error("Configuring InfluxDB failed. Error code/reason: %s", e)
 
 
     # Configuring connection with OPC UA server
