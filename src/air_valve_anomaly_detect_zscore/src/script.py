@@ -50,20 +50,22 @@ def get_env_var(
     allow_convert = [str, int, float]
     if req_type not in allow_convert and req_type is not None:
         logger.error(
-            f"Cannot convert value of env_var {env_var} to {req_type}. \
-                Allowed convert type: str, int, float"
+            "Cannot convert value of env_var %s to %s. \
+                Allowed convert type: str, int, float",
+                env_var, req_type
         )
         raise SystemExit
 
     # Return value of env variable
     if env_val is None and default is None:
         # env_var does not exist and we did not set default value
-        logger.error(f"Env variable {env_var} does not exist")
+        logger.error("Env variable %s does not exist", env_var)
         raise SystemExit
     elif env_val is None:
         # env_var does not exist but return default (default is different than none)
         logger.warning(
-            f"Env variable {env_var} does not exist, return default value: {default}"
+            "Env variable %s does not exist, return default value: %s",
+            env_var, default
         )
         return default
     elif env_type is not req_type and req_type is not None:
@@ -71,22 +73,25 @@ def get_env_var(
         try:
             converted_env = req_type(env_val)
             logger.info(
-                f"Env variable {env_var} value: {env_val}. Converted from {env_type} to {req_type}."
+                "Env variable %s value: %s. Converted from %s to %s.",
+                env_var, env_val, env_type, req_type
             )
             return converted_env
         except Exception as e:
             logger.error(
-                f"Convert env_var variable {env_var} from {env_type} to {req_type} failed: {e}"
+                "Convert env_var variable %s from %s to %s failed: %s",
+                env_var, env_type, req_type, e
             )
             raise SystemExit
     else:
         # env_var exists, is the same type (or we not set type)
-        logger.info(f"Env variable {env_var} value: {env_val}, type: {env_type}")
+        logger.info("Env variable %s value: %s, type: %s",
+                    env_var, env_val, env_type )
         return env_val
 
 
 
-logger.info("Seting const global variables")
+logger.info("Setting const global variables")
 
 LINE_NAME = get_env_var("LINE_NAME", str)
 MACHINE_NAME = get_env_var("MACHINE_NAME", str)
@@ -106,7 +111,7 @@ INFLUX_JITTER_INTERVAL = get_env_var("INFLUX_JITTER_INTERVAL", int)
 INFLUX_ORG = get_env_var("INFLUX_ORG", str)
 INFLUX_TOKEN = get_env_var("INFLUX_TOKEN", str)
 INFLUX_URL = "http://" + INFLUX_HOST + ":" + INFLUX_PORT
-logger.info(f"INFLUX_URL value is:  {format(INFLUX_URL)} ")
+logger.info("INFLUX_URL value is: %s ", INFLUX_URL)
 
 #Threshold for z-score value. Point above this threshold is treated as anomaly
 Z_SCORE_THRESHOLD = get_env_var("Z_SCORE_THRESHOLD", float, default=2.0)
@@ -234,7 +239,8 @@ class AnomalyDetectionZscore:
                                                 )
         except Exception as e:
             logger.error(
-                f"Calculation `anomaly ratio of model` {self._name} failed. Error code/reason: {e}"
+                "Calculation `anomaly ratio of model` %s failed. Error code/reason: %s",
+                self._name, e
             )
 
     def check_if_anomaly(self, value: float):
@@ -273,7 +279,8 @@ class AnomalyDetectionZscore:
 
         except Exception as e:
             logger.error(
-                f'Calculation `anomaly of model` "{self._name}" failed. Error code/reason: {e}'
+                'Calculation `anomaly of model` %s failed. Error code/reason: %s',
+                self._name, e
             )
 
 
@@ -286,7 +293,7 @@ class OpcHandlerAnalytics:
         self.client = None
         self.node_id =''
         self.server_url = server_url
-        logging.info(f"server opc: {self.server_url}")
+        logging.info("server opc: %s", self.server_url)
         self.sensor_analytics = AnomalyDetectionZscore("sensor_analytics",
                                         MODEL_WINDOW_SIZE,
                                         ANOMALY_LIST_SIZE,
@@ -332,9 +339,9 @@ class OpcHandlerAnalytics:
                 logging.info("Connected to OPC Server")
                 break
             except Exception as e:
-                logging.error(f"Unable to connect ot OPC server {e}")
+                logging.error("Unable to connect ot OPC server. Error %s", e)
                 logging.error(
-                    f"Trying to re-establish connection with OPC server in 3 seconds "
+                    "Trying to re-establish connection with OPC server in 3 seconds "
                 )
                 time.sleep(3)
 
@@ -403,7 +410,8 @@ class OpcHandlerAnalytics:
                     time_value   = opc_node_children[4].get_value()
                     timestamp     = opc_node_children[5].get_value()
                 except Exception as e:
-                    logging.error(f"Error reading node {self.node} || {opc_node_children}: {e}")
+                    logging.error("Error reading node %s || %s",
+                                  self.node, opc_node_children)
                     continue
                 else:
 
@@ -443,23 +451,23 @@ class OpcHandlerAnalytics:
 
         except KeyboardInterrupt:
             self.client.disconnect()
-            print("Keyboard interrupt received. Exiting...")
+            logging.info("Keyboard interrupt received. Exiting...")
 
 
     def write_to_influxdb(self, *sensor_data):
         """
         Write sensor data to InfluxDB.
         """
-        logger.info(f"line_name: {str(sensor_data[1])} ")
-        logger.info(f"machine_name: {str(sensor_data[2])} ")
-        logger.info(f"valve_name: {str(sensor_data[3])} ")
-        logger.info(f"operation_type: {str(sensor_data[4])} ")
-        logger.info(f"value: {str(sensor_data[5])} ")
-        logger.info(f"anomaly: {str(sensor_data[6])} ")
-        logger.info(f"model_avg: {str(sensor_data[7])} ")
-        logger.info(f"z_score: {str(sensor_data[8])} ")
-        logger.info(f"z_score_thresh: {str(sensor_data[9])} ")
-        logger.info(f"timestamp: {str(sensor_data[10])} ")
+        logger.debug(f"line_name: {str(sensor_data[1])} ")
+        logger.debug(f"machine_name: {str(sensor_data[2])} ")
+        logger.debug(f"valve_name: {str(sensor_data[3])} ")
+        logger.debug(f"operation_type: {str(sensor_data[4])} ")
+        logger.debug(f"value: {str(sensor_data[5])} ")
+        logger.debug(f"anomaly: {str(sensor_data[6])} ")
+        logger.debug(f"model_avg: {str(sensor_data[7])} ")
+        logger.debug(f"z_score: {str(sensor_data[8])} ")
+        logger.debug(f"z_score_thresh: {str(sensor_data[9])} ")
+        logger.debug(f"timestamp: {str(sensor_data[10])} ")
 
         try:
             measurement = "AirValve"
@@ -467,14 +475,14 @@ class OpcHandlerAnalytics:
                 influxdb_client.Point(measurement)
                 .tag("line_name", str(sensor_data[1]))
                 .tag("machine_name", str(sensor_data[2]))
-                .tag("valve_name", str(valve_name))
-                .tag("operation_type", str(time_type))
-                .field("value", int(time_value))
-                .field("anomaly", 0)
-                .field("model_avg", 0.0)
-                .field("z_score", 0.0)
-                .field("z_score_thresh", round(float(z_score_thresh), 4))
-                .time(time=datetime.fromtimestamp(int(timestamp) / 1000, UTC),
+                .tag("valve_name", str(sensor_data[3]))
+                .tag("operation_type", str(sensor_data[4]))
+                .field("value", int(sensor_data[5]))
+                .field("anomaly", int(sensor_data[6]))
+                .field("model_avg",round(float(sensor_data[7]), 4))
+                .field("z_score", round(float(sensor_data[8]), 4))
+                .field("z_score_thresh", round(float(sensor_data[9]), 4))
+                .time(time=datetime.fromtimestamp(int(sensor_data[10]) / 1000, UTC),
                     write_precision='ms')
             )
 
@@ -482,7 +490,7 @@ class OpcHandlerAnalytics:
                 write_api.write(INFLUX_BUCKET_NAME, INFLUX_ORG, point)
 
         except Exception as e:
-            logger.error(f"Send data to InfluxDB failed. Error code/reason: {e}")
+            logger.error("Send data to InfluxDB failed. Error code/reason: %s", e)
 
 
 
@@ -503,7 +511,7 @@ if __name__ == "__main__":
                                      retry_interval=1000)
 
     except Exception as e:
-        logger.error(f"Setting of InfluxDB failed. Error code/reason: {e}")
+        logger.error("Setting of InfluxDB failed. Error code/reason: %s", e)
 
 
     # Configure connection with OPC UA server
