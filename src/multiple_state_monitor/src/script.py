@@ -101,7 +101,7 @@ INFLUX_JITTER_INTERVAL = get_env_var("INFLUX_JITTER_INTERVAL", int)
 INFLUX_ORG = get_env_var("INFLUX_ORG", str)
 INFLUX_TOKEN = get_env_var("INFLUX_TOKEN", str)
 INFLUX_URL = "http://" + INFLUX_HOST + ":" + INFLUX_PORT
-logger.info(f"INFLUX_URL value is:  {INFLUX_URL} ")
+logger.info("INFLUX_URL value is: %s", INFLUX_URL)
 
 
 class OPCHandler:
@@ -113,7 +113,7 @@ class OPCHandler:
         self.config = config
         self.server_url = self.config["opc"]["server_url"]
         self.nodes = {}
-        logging.info(f"server opc: {self.server_url}")
+        logging.info("server opc: %s", self.server_url)
 
     def connect_to_server(self, username:str, password:str, secure_string:str):
         """
@@ -130,9 +130,9 @@ class OPCHandler:
                 logging.info("Connected to OPC Server")
                 break
             except Exception as e:
-                logging.error(f"Unable to connect ot OPC server {e}")
+                logging.error("Unable to connect ot OPC server %s", e)
                 logging.error(
-                    f"Trying to re-establish connection with OPC server in 3 seconds "
+                    "Trying to re-establish connection with OPC server in 3 seconds "
                 )
                 time.sleep(3)
 
@@ -150,7 +150,7 @@ class OPCHandler:
                 self.nodes[node_id] = self.client.get_node(f"ns={namespace};s={node_id_string}")
             else:
                 logging.error("OPC client is not created!")
-        logging.info(f"Configured nodes: {self.nodes}")
+        logging.info("Configured nodes: %s", self.nodes)
 
     def read_values(self):
         """
@@ -174,7 +174,8 @@ class OPCHandler:
                         state_value  = opc_node_children[3].get_value()
                         timestamp     = opc_node_children[4].get_value()
                     except Exception as e:
-                        logging.error(f"Error reading node {node_id}|{node}: {e}")
+                        logging.error("Error reading node %s|%s: %s",
+                                      node_id, node, e)
                         continue
                     else:
 
@@ -200,7 +201,7 @@ class OPCHandler:
 
         except KeyboardInterrupt:
             self.client.disconnect()
-            print("Keyboard interrupt received. Exiting...")
+            logging.info("Keyboard interrupt received. Exiting...")
 
 
     def write_to_influxdb(self, *sensor_data):
@@ -224,7 +225,7 @@ class OPCHandler:
                 write_api.write(INFLUX_BUCKET_NAME, INFLUX_ORG, point)
 
         except Exception as e:
-            logging.error(f"Send data to InfluxDB failed. Error code/reason: {e}")
+            logging.error("Send data to InfluxDB failed. Error code/reason: %s", e)
 
 
 
@@ -244,7 +245,7 @@ if __name__ == "__main__":
                                     retry_interval=1000)
 
     except Exception as e:
-        logger.error(f"Configuring InfluxDB failed. Error code/reason: {e}")
+        logger.error("Configuring InfluxDB failed. Error code/reason: %s", e)
 
 
     # Configuring connection with OPC UA server
