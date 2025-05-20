@@ -51,7 +51,7 @@ INFLUX_JITTER_INTERVAL = get_env_var("INFLUX_JITTER_INTERVAL", int)
 INFLUX_ORG = get_env_var("INFLUX_ORG", str)
 INFLUX_TOKEN = get_env_var("INFLUX_TOKEN", str)
 INFLUX_URL = "http://" + INFLUX_HOST + ":" + INFLUX_PORT
-logger.info(f"INFLUX_URL value is:  {INFLUX_URL} ")
+logger.info("INFLUX_URL value is:  %s ", INFLUX_URL)
 
 # which current peak in a row should be taken into inrush current detection
 CURRENT_PEAK_NUMBER = get_env_var("CURRENT_PEAK_NUMBER", int, default=1)
@@ -116,7 +116,7 @@ class OpcHandlerAnalytics:
         # data class with electrical current samples
         self.electrical_analytics = ElectricalAnalytics()
 
-        logger.info(f"server opc: {self.server_url}")
+        logger.info("server opc: %s", self.server_url)
 
 
     def calculate_integr_analytics(self,
@@ -216,7 +216,7 @@ class OpcHandlerAnalytics:
                     inrush_current_ph2, \
                     inrush_current_ph3
         except Exception as e:
-            logger.error(f"*** Error: {e} - No inrush current detected ***")
+            logger.error(" Error: %s - No inrush current detected ", e)
             return False, False, False
 
 
@@ -235,9 +235,9 @@ class OpcHandlerAnalytics:
                 logger.info("Connected to OPC Server")
                 break
             except Exception as e:
-                logger.error(f"Unable to connect ot OPC server {e}")
+                logger.error("Unable to connect ot OPC server %s", e)
                 logger.error(
-                    f"Trying to re-establish connection with OPC server in 3 seconds "
+                    "Trying to re-establish connection with OPC server in 3 seconds "
                 )
                 time.sleep(3)
 
@@ -254,7 +254,7 @@ class OpcHandlerAnalytics:
             if self.client:
                 self.node_id = node_id
                 self.node = self.client.get_node(node_id)
-                logger.info(f"Configured node: {self.node}")
+                logger.info("Configured node: %s", self.node)
             else:
                 logger.error("OPC client is not created!")
         else:
@@ -286,7 +286,8 @@ class OpcHandlerAnalytics:
                     el_current_phase3     = opc_node_children[6].get_children()[26].get_value()
 
                 except Exception as e:
-                    logger.error(f"Error reading node {self.node} || {opc_node_children}: {e}")
+                    logger.error("Error reading node %s || %s: %s",
+                                 self.node, opc_node_children, e)
                     continue
                 else:
 
@@ -390,7 +391,7 @@ class OpcHandlerAnalytics:
                                         write_api.write(INFLUX_BUCKET_NAME, INFLUX_ORG, point)
 
                                 except Exception as e:
-                                    logger.error(f"Send data to InfluxDB failed. Error code/reason: {e}")
+                                    logger.error("Send data to InfluxDB failed. Error code/reason: %s", e)
 
                             # Clear samples after data sent to InfluxDB
                             self.electrical_analytics.clear_samples()
@@ -439,7 +440,7 @@ class OpcHandlerAnalytics:
                 write_api.write(INFLUX_BUCKET_NAME, INFLUX_ORG, point)
 
         except Exception as e:
-            logger.error(f"Send data to InfluxDB failed. Error code/reason: {e}")
+            logger.error("Send data to InfluxDB failed. Error code/reason: %s", e)
 
 
 # Main function of script
@@ -459,7 +460,7 @@ if __name__ == "__main__":
                                     retry_interval=1000)
 
     except Exception as e:
-        logger.error(f"Configuring InfluxDB failed. Error code/reason: {e}")
+        logger.error("Configuring InfluxDB failed. Error code/reason: %s", e)
 
 
     # Configure connection with OPC UA server

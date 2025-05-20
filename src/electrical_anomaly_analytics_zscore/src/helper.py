@@ -41,20 +41,22 @@ def get_env_var(
     allow_convert = [str, int, float]
     if req_type not in allow_convert and req_type is not None:
         helper_logger.error(
-            f"Cannot convert value of env {env_var} to {req_type}. \
-                Allowed conversion type: str, int, float"
+            "Cannot convert value of env %s to %s. \
+                Allowed conversion type: str, int, float",
+                env_var, req_type
         )
         raise SystemExit
 
     # Return value of env variable
     if env_val is None and default is None:
         # env does not exist and we did not set default value
-        helper_logger.error(f"Env variable {env_var} does not exist")
+        helper_logger.error("Env variable %s does not exist", env_var)
         raise SystemExit
     elif env_val is None:
         # env does not exist but return default (default is different than none)
         helper_logger.warning(
-            f"Env variable {env_var} does not exist, return default value: {default}"
+            "Env variable %s does not exist, return default value: %s",
+            env_var, default
         )
         return default
     elif env_type is not req_type and req_type is not None:
@@ -62,17 +64,20 @@ def get_env_var(
         try:
             converted_env = req_type(env_val)
             helper_logger.info(
-                f"Env variable {env_var} value: {env_val}. Converted from {env_type} to {req_type}."
+                "Env variable %s value: %s. Converted from %s to %s.",
+                env_var, env_val, env_type, req_type
             )
             return converted_env
         except Exception as e:
             helper_logger.error(
-                f"Convert env_var variable {env_var} from {env_type} to {req_type} failed: {e}"
+                "Convert env_var variable %s from %s to %s failed: %s",
+                env_var, env_type, req_type, e
             )
             raise SystemExit
     else:
         # env exist, is the same type (or we not set type) so we return it
-        helper_logger.info(f"Env variable {env_var} value: {env_val}, type: {env_type}")
+        helper_logger.info("Env variable %s value: %s, type: %s",
+                           env_var, env_val, env_type)
         return env_val
 
 
@@ -272,7 +277,8 @@ class AnomalyDetectionZscore:
 
         except Exception as e:
             self.logger.error(
-                f'Calculation `anomaly of model` "{self._name}" failed. Error code/reason: {e}'
+                'Calculation `anomaly of model` %s failed. Error code/reason: %s',
+                self._name, e
             )
 
 
