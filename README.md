@@ -9,7 +9,7 @@ IIoT project for data exchange between PLC in OT and IT area with usage of OPC U
 #### General Overview
 Using this framework it's possible to collect data from different sensors, PLCs and devices in OT area. The collected data are preprocessed in Beckhoff IPC (acts as OPC UA server), converted into OPC UA structures as `StructuredType` and can be polled by any OPC UA client.
 
-In IT area, there are couple of containerized  applications which runs using Docker (Docker-Compose) and Portainer.
+In IT area, there are couple of containerized  applications which run using Docker (Docker-Compose) and Portainer.
 Python apps (as opc ua clients) request data from Bechkoff IPC (as opc ua server) and perform analytics, anomaly detection in sensor signals and finally save the results in time series database InfluxDB. 
 The graphical results are visible as dashboards in Grafana.
 
