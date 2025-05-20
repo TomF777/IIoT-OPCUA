@@ -10,7 +10,7 @@ It expects following data structure for each NODE_ID:
 * line_name `(string)`
 * machine_name `(string)`
 * state_name `(string)`
-* state_value `(float)`
+* state_value `(int)`
 * timestamp `(ulint) - as Epoch Unix (13 digits)`
 
 
